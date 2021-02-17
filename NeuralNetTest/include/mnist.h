@@ -64,7 +64,7 @@ void FlipLong(unsigned char* ptr)
 
 void read_mnist_char_size(char* file_path, int num_data, int len_info, int arr_n, unsigned char data_char[][SIZE], int info_arr[])
 {
-    int i, j, k, fd;
+    int i, fd;
     unsigned char* ptr;
 
 #pragma warning(suppress : 4996)
@@ -93,7 +93,7 @@ void read_mnist_char_size(char* file_path, int num_data, int len_info, int arr_n
 
 void read_mnist_char(char* file_path, int num_data, int len_info, int arr_n, unsigned char data_char[][1], int info_arr[])
 {
-    int i, j, k, fd;
+    int i, fd;
     unsigned char* ptr;
 
 #pragma warning(suppress : 4996)

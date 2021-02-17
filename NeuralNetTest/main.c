@@ -1,5 +1,22 @@
 #include "include/mnist.h"
 
+//3 hidden layers with 10 neurons, 784 inputs, 10 outputs
+
+double output_Layer[10] = { 0 };
+double Layer_1[10] = { 0 };
+double Layer_2[10] = { 0 };
+double Layer_3[10] = { 0 };
+
+double weights_Layer_1[784][10] = { 0 };
+double weights_Layer_2[10][10] = { 0 };
+double weights_Layer_3[10][10] = { 0 };
+double weights_Output[10][10] = { 0 };
+
+double bias_Layer_1[10] = { 0 };
+double bias_Layer_2[10] = { 0 };
+double bias_Layer_3[10] = { 0 };
+double bias_Output[10] = { 0 };
+
 
 int main(void)
 {
