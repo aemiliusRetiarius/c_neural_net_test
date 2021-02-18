@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 
 //3 hidden layers with 10 neurons, 784 inputs, 10 outputs (1 -> 2 -> 3 -> output)
 
@@ -21,6 +22,19 @@ double bias_Layer_2[10] = { 0 };
 double bias_Layer_3[10] = { 0 };
 double bias_Output[10] = { 0 };
 
+double d_weights_Layer_1[784][10] = { 0 };
+double d_weights_Layer_2[10][10] = { 0 };
+double d_weights_Layer_3[10][10] = { 0 };
+double d_weights_Output[10][10] = { 0 };
+
+double d_bias_Layer_1[10] = { 0 };
+double d_bias_Layer_2[10] = { 0 };
+double d_bias_Layer_3[10] = { 0 };
+double d_bias_Output[10] = { 0 };
+
+//function definitions INSERT
+
+double test_Network(int imageNum);
 
 int main(void)
 {
@@ -31,13 +45,14 @@ int main(void)
     //initialise bias matrices (-0.1 to 0.1)
     initialise_Bias_Matrices();
     
-    forward_Prop(5);
+    forward_Prop(5, false);
     int i;
     for (i = 0; i < 10; i++)
     {
         printf("%f \n", output_Layer[i]);
     }
-
+    printf("Epoch Accuracy = %f \n", test_Network(100));
+    
     // print first label in test dataset
     //printf("label: %d\n", test_label[0]);
 
@@ -93,7 +108,7 @@ double sigmoid(double exponent)
     return 1 / (1 + exp(-1 * exponent));
 }
 
-int forward_Prop(int image_Num) //todo: train or test flag, sigmoid on output/tanh  in hidden
+int forward_Prop(int imageNum, bool testFlag) //sigmoid on output/tanh  in hidden
 {
     double sum;
     int x, y; //y = neuron index, x = weight index
@@ -104,7 +119,7 @@ int forward_Prop(int image_Num) //todo: train or test flag, sigmoid on output/ta
         sum = 0.0;
         for (x = 0; x < 784; x++)
         {
-            sum = sum + train_image[image_Num][x] * weights_Layer_1[x][y];
+            sum = sum + (!testFlag)*(train_image[imageNum][x] * weights_Layer_1[x][y]) + (testFlag) * (test_image[imageNum][x] * weights_Layer_1[x][y]);
         }
         sum = sum + bias_Layer_1[y];
         Layer_1[y] = tanh(sum);
@@ -149,3 +164,64 @@ int forward_Prop(int image_Num) //todo: train or test flag, sigmoid on output/ta
     return 0;
 }
 
+int back_prop(int imageNum)
+{
+    double d_output_Layer[10] = { 0 };
+    double d_Layer_1[10] = { 0 };
+    double d_Layer_2[10] = { 0 };
+    double d_Layer_3[10] = { 0 };
+
+    return 0;
+}
+
+int minibatch(int trainExNum)
+{
+
+    return 0;
+}
+
+int update_Weight_Matrices(void)
+{
+    return 0;
+}
+
+int update_Bias_Matrices(void)
+{
+
+    return 0;
+}
+
+double test_Network(int testExNum)
+{
+    double epochAccuracy = 0;
+    int i, j, imageNum, correctClassifications;
+    double modelConfidence;
+    int modelPrediction;
+    bool correctClassificationFlag;
+
+    correctClassifications = 0;
+    for (i = 0; i < testExNum; i++)
+    {
+        imageNum = rand() % 10000;
+        forward_Prop(imageNum, true);
+        modelConfidence = 0.0;
+        modelPrediction = 0;
+        
+        correctClassificationFlag = false;
+        for (j = 0; j < 10; j++)
+        {
+            if (output_Layer[j] > modelConfidence)
+            {
+                modelPrediction = j;
+                modelConfidence = output_Layer[j];
+            }
+        }
+        if (modelPrediction == test_label[imageNum]) //possibly remove if by subtracting prediction from label
+        {
+            correctClassificationFlag = true;
+        }
+        correctClassifications = correctClassifications + correctClassificationFlag; //+1 if correct
+    }
+    epochAccuracy = (correctClassifications / (double)testExNum) * 100;
+    return epochAccuracy;
+}
