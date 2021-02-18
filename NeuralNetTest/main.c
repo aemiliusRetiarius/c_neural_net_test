@@ -30,15 +30,16 @@ int main(void)
     initialise_Weight_Matrices();
     //initialise bias matrices (-0.1 to 0.1)
     initialise_Bias_Matrices();
-    // print pixels of first data in test dataset
+    
+    forward_Prop(5);
     int i;
-    for (i = 0; i < 784; i++) {
-        printf("%1.1f ", test_image[0][i]);
-        if ((i + 1) % 28 == 0) putchar('\n');
+    for (i = 0; i < 10; i++)
+    {
+        printf("%f \n", output_Layer[i]);
     }
 
     // print first label in test dataset
-    printf("label: %d\n", test_label[0]);
+    //printf("label: %d\n", test_label[0]);
 
     // save image of first data in test dataset as .pgm file
     //save_mnist_pgm(test_image, 0);
@@ -84,4 +85,67 @@ int initialise_Bias_Matrices(void)
         bias_Layer_3[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
         bias_Output[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
     }
+    return 0;
 }
+
+double sigmoid(double exponent)
+{
+    return 1 / (1 + exp(-1 * exponent));
+}
+
+int forward_Prop(int image_Num) //todo: train or test flag, sigmoid on output/tanh  in hidden
+{
+    double sum;
+    int x, y; //y = neuron index, x = weight index
+    
+    //layer 1
+    for (y = 0; y < 10; y++)
+    {
+        sum = 0.0;
+        for (x = 0; x < 784; x++)
+        {
+            sum = sum + train_image[image_Num][x] * weights_Layer_1[x][y];
+        }
+        sum = sum + bias_Layer_1[y];
+        Layer_1[y] = tanh(sum);
+    }
+
+    //layer 2
+    for (y = 0; y < 10; y++)
+    {
+        sum = 0.0;
+        for (x = 0; x < 10; x++)
+        {
+            sum = sum + Layer_1[y] * weights_Layer_2[x][y];
+        }
+        sum = sum + bias_Layer_2[y];
+        Layer_2[y] = tanh(sum);
+    }
+
+    //layer 3
+    for (y = 0; y < 10; y++)
+    {
+        sum = 0.0;
+        for (x = 0; x < 10; x++)
+        {
+            sum = sum + Layer_2[y] * weights_Layer_3[x][y];
+        }
+        sum = sum + bias_Layer_3[y];
+        Layer_3[y] = tanh(sum);
+    }
+
+    //output layer
+    for (y = 0; y < 10; y++)
+    {
+        sum = 0.0;
+        for (x = 0; x < 10; x++)
+        {
+            sum = sum + Layer_3[y] * weights_Output[x][y];
+        }
+        sum = sum + bias_Output[y];
+        output_Layer[y] = sigmoid(sum);
+    }
+
+    return 0;
+}
+

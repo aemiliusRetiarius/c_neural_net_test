@@ -139,7 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="example.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
