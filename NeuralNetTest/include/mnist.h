@@ -62,9 +62,9 @@ void FlipLong(unsigned char* ptr)
 }
 
 
-void read_mnist_char_size(char* file_path, int num_data, int len_info, int arr_n, unsigned char data_char[][SIZE], int info_arr[])
+void read_mnist_char_size(char* file_path, int num_data, int len_info, int arr_n, unsigned char *data_char, int info_arr[])
 {
-    int i, fd;
+    int i, j, k, fd;
     unsigned char* ptr;
 
 #pragma warning(suppress : 4996)
@@ -83,17 +83,20 @@ void read_mnist_char_size(char* file_path, int num_data, int len_info, int arr_n
     }
 
     // read-in mnist numbers (pixels|labels)
-    for (i = 0; i < num_data; i++) {
 #pragma warning(suppress : 4996)
-        _read(fd, data_char[i], arr_n * sizeof(unsigned char));
-    }
+        _read(fd, data_char, arr_n * sizeof(unsigned char) * num_data);
+    // read-in mnist numbers (pixels|labels)
+//    for (i = 0; i < num_data; i++) {
+//#pragma warning(suppress : 4996)
+//        _read(fd, data_char[i], arr_n * sizeof(unsigned char));
+//    }
 
     _close(fd);
 }
 
-void read_mnist_char(char* file_path, int num_data, int len_info, int arr_n, unsigned char data_char[][1], int info_arr[])
+void read_mnist_char(char* file_path, int num_data, int len_info, int arr_n, unsigned char *data_char, int info_arr[])
 {
-    int i, fd;
+    int i, j, k, fd;
     unsigned char* ptr;
 
 #pragma warning(suppress : 4996)
@@ -112,10 +115,11 @@ void read_mnist_char(char* file_path, int num_data, int len_info, int arr_n, uns
     }
 
     // read-in mnist numbers (pixels|labels)
-    for (i = 0; i < num_data; i++) {
 #pragma warning(suppress : 4996)
-        _read(fd, data_char[i], arr_n * sizeof(unsigned char));
-    }
+    _read(fd, data_char, arr_n * sizeof(unsigned char) * num_data);
+//    for (i = 0; i < num_data; i++) {
+//        _read(fd, data_char[i], arr_n * sizeof(unsigned char));
+//    }
 
     _close(fd);
 }
@@ -208,6 +212,7 @@ void save_image(int n, char name[])
     for (y = 0; y < height[n]; y++)
         for (x = 0; x < width[n]; x++)
             fputc(image[n][x][y], fp);
+    fflush(fp);
     fclose(fp);
     printf("Image was saved successfully\n");
 }
