@@ -17,7 +17,7 @@ double sum_Layer_1[10] = { 0 };
 double sum_Layer_2[10] = { 0 };
 double sum_Layer_3[10] = { 0 };
 
-double weights_Layer_1[784][10] = { 0 };
+double weights_Layer_1[10][784] = { 0 };
 double weights_Layer_2[10][10] = { 0 };
 double weights_Layer_3[10][10] = { 0 };
 double weights_Output[10][10] = { 0 };
@@ -27,7 +27,7 @@ double bias_Layer_2[10] = { 0 };
 double bias_Layer_3[10] = { 0 };
 double bias_Output[10] = { 0 };
 
-double d_weights_Layer_1[784][10] = { 0 };
+double d_weights_Layer_1[10][784] = { 0 };
 double d_weights_Layer_2[10][10] = { 0 };
 double d_weights_Layer_3[10][10] = { 0 };
 double d_weights_Output[10][10] = { 0 };
@@ -37,7 +37,7 @@ double d_bias_Layer_2[10] = { 0 };
 double d_bias_Layer_3[10] = { 0 };
 double d_bias_Output[10] = { 0 };
 
-double sum_d_weights_Layer_1[784][10] = { 0 }; //todo: move back into minibatch?
+double sum_d_weights_Layer_1[10][784] = { 0 }; //todo: move back into minibatch?
 double sum_d_weights_Layer_2[10][10] = { 0 };
 double sum_d_weights_Layer_3[10][10] = { 0 };
 double sum_d_weights_Output[10][10] = { 0 };
@@ -72,17 +72,16 @@ int main(void)
     //initialise bias matrices (-0.1 to 0.1)
     initialise_Bias_Matrices();
     
-    forward_Prop(0, false);
-    back_prop(0, false);
     int i;
-    for (i = 0; i < 10; i++)
-    {
-        printf("%f \n", output_Layer[i]);
-    }
+    
 
-    for (i = 0; i < 50; i++)
+    for (i = 0; i < 5000; i++)
     {
-        minibatch(100, 0.1);
+        minibatch(32, 0.1);
+        if (i % 100 == 0)
+        {
+            test_Network(100);
+        }
     }
     
 
@@ -97,6 +96,48 @@ int main(void)
         printf("%.1f ", train_image[1000][i]);
     }
     printf("%d\n", train_label[1000]);
+
+    forward_Prop(1000, false);
+    back_prop(1000, false);
+
+    for (i = 0; i < 10; i++)
+    {
+        printf("%f \n", output_Layer[i]);
+    }
+
+    for (i = 0; i < 784; i++)
+    {
+        if ((i % 28) == 0)
+        {
+            printf("\n");
+        }
+        printf("%.1f ", train_image[1001][i]);
+    }
+    printf("%d\n", train_label[1001]);
+
+    forward_Prop(1001, false);
+
+    for (i = 0; i < 10; i++)
+    {
+        printf("%f \n", output_Layer[i]);
+    }
+
+    for (i = 0; i < 784; i++)
+    {
+        if ((i % 28) == 0)
+        {
+            printf("\n");
+        }
+        printf("%.1f ", train_image[45000][i]);
+    }
+    printf("%d\n", train_label[45000]);
+
+    forward_Prop(45000, false);
+
+    for (i = 0; i < 10; i++)
+    {
+        printf("%f \n", output_Layer[i]);
+    }
 
     // print first label in test dataset
     //printf("label: %d\n", test_label[0]);
@@ -114,20 +155,20 @@ int main(void)
 int initialise_Weight_Matrices(void)
 {
     int x, y;
-    for (x = 0; x < 784; x++) //layer 1
+    for (y = 0; y < 10; y++) //layer 1
     {
-        for (y = 0; y < 10; y++)
+        for (x = 0; x < 784; x++)
         {
-            weights_Layer_1[x][y] = ((double)rand() / RAND_MAX * 0.2 - 0.1); //random values between -0.1 and 0.1
+            weights_Layer_1[y][x] = ((double)rand() / RAND_MAX * 0.4 - 0.2); //random values between -0.2 and 0.2
         }
     }
-    for (x = 0; x < 10; x++)//layer 2,3,output
+    for (y = 0; y < 10; y++)//layer 2,3,output
     {
-        for (y = 0; y < 10; y++)
+        for (x = 0; x < 10; x++)
         {
-            weights_Layer_2[x][y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
-            weights_Layer_3[x][y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
-            weights_Output[x][y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
+            weights_Layer_2[y][x] = ((double)rand() / RAND_MAX * 0.4 - 0.2);
+            weights_Layer_3[y][x] = ((double)rand() / RAND_MAX * 0.4 - 0.2);
+            weights_Output[y][x] = ((double)rand() / RAND_MAX * 0.4 - 0.2);
         }
     }
     return 0;
@@ -135,13 +176,13 @@ int initialise_Weight_Matrices(void)
 
 int initialise_Bias_Matrices(void)
 {
-    int x;
-    for (x = 0; x < 10; x++)
+    int y;
+    for (y = 0; y < 10; y++)
     {
-        bias_Layer_1[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
-        bias_Layer_2[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
-        bias_Layer_3[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
-        bias_Output[x] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
+        bias_Layer_1[y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
+        bias_Layer_2[y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
+        bias_Layer_3[y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
+        bias_Output[y] = ((double)rand() / RAND_MAX * 0.2 - 0.1);
     }
     return 0;
 }
@@ -164,21 +205,17 @@ int forward_Prop(int imageNum, bool testFlag) //sigmoid on output/tanh  in hidde
         {
             if (testFlag)
             {
-                sum = sum + test_image[imageNum][x] * weights_Layer_1[x][y];
+                sum = sum + test_image[imageNum][x] * weights_Layer_1[y][x];
             }
             else
             {
-                sum = sum + train_image[imageNum][x] * weights_Layer_1[x][y];
+                sum = sum + train_image[imageNum][x] * weights_Layer_1[y][x];
             }
 
-            //sum = sum + ((double)!testFlag)*(train_image[imageNum][x] * weights_Layer_1[x][y]) + ((double)testFlag) * (test_image[imageNum][x] * weights_Layer_1[x][y]);
+            //sum = sum + ((double)!testFlag)*(train_image[imageNum][x] * weights_Layer_1[y][x]) + ((double)testFlag) * (test_image[imageNum][x] * weights_Layer_1[y][x]);
             //todo: redo branchless, cast bool to double?
         }
         sum = sum + bias_Layer_1[y];
-        if (!testFlag) //todo: cache always?
-        {
-            sum_Layer_1[y] = sum;
-        }
         Layer_1[y] = tanh(sum);
     }
 
@@ -188,7 +225,7 @@ int forward_Prop(int imageNum, bool testFlag) //sigmoid on output/tanh  in hidde
         sum = 0.0;
         for (x = 0; x < 10; x++)
         {
-            sum = sum + Layer_1[y] * weights_Layer_2[x][y];
+            sum = sum + Layer_1[x] * weights_Layer_2[y][x];
         }
         sum = sum + bias_Layer_2[y];
         if (!testFlag)
@@ -204,7 +241,7 @@ int forward_Prop(int imageNum, bool testFlag) //sigmoid on output/tanh  in hidde
         sum = 0.0;
         for (x = 0; x < 10; x++)
         {
-            sum = sum + Layer_2[y] * weights_Layer_3[x][y];
+            sum = sum + Layer_2[x] * weights_Layer_3[y][x];
         }
         sum = sum + bias_Layer_3[y];
         if (!testFlag)
@@ -220,7 +257,7 @@ int forward_Prop(int imageNum, bool testFlag) //sigmoid on output/tanh  in hidde
         sum = 0.0;
         for (x = 0; x < 10; x++)
         {
-            sum = sum + Layer_3[y] * weights_Output[x][y];
+            sum = sum + Layer_3[x] * weights_Output[y][x];
         }
         sum = sum + bias_Output[y];
         if (!testFlag)
@@ -247,25 +284,39 @@ int back_prop(int imageNum, bool testFlag) //cross entropy loss: -label*log(est)
     double d_sum_Layer_3[10] = { 0 };
 
     double sum;
-    int i, x, y;
-    for (i = 0; i < 10; i++) //todo: branchless? sub label from index? //output layer
+    int x, y;
+    for (y = 0; y < 10; y++) //todo: branchless? sub label from index? //output layer
     {
-        if (i == (testFlag * test_label[imageNum] + !testFlag * train_label[imageNum])) //todo: time branchless //da
+        if (y == (testFlag * test_label[imageNum] + !testFlag * train_label[imageNum])) //todo: time branchless //da
         {
-            d_output_Layer[i] = -(1 / output_Layer[i]);
+            if (output_Layer[y] == 0)
+            {
+                d_output_Layer[y] = 10000;
+            }
+            else
+            {
+                d_output_Layer[y] = -(1 / output_Layer[y]);
+            }
         }
         else 
         {
-            d_output_Layer[i] = (1 / (1 - output_Layer[i]));
+            if (output_Layer[y] == 1)
+            {
+                d_output_Layer[y] = 10000;
+            }
+            else
+            {
+                d_output_Layer[y] = (1 / (1 - output_Layer[y]));
+            }
         }
-        d_sum_Output[i] = d_output_Layer[i] * output_Layer[i] * (1 - output_Layer[i]); //dz
+        d_sum_Output[y] = d_output_Layer[y] * output_Layer[y] * (1 - output_Layer[y]); //dz
     }
 
     for (y = 0; y < 10; y++) 
     {
         for (x = 0; x < 10; x++)
         {
-            d_weights_Output[x][y] = Layer_3[x] * d_sum_Output[y]; //dw
+            d_weights_Output[y][x] = d_sum_Output[y] * Layer_3[x]; //dw
         }
         d_bias_Output[y] = d_sum_Output[y]; //db
     }
@@ -273,73 +324,72 @@ int back_prop(int imageNum, bool testFlag) //cross entropy loss: -label*log(est)
 
     ///////////////////////////// end output
 
-    for (x = 0; x < 10; x++) //dz(L) -> da(L-1)
+    for (x = 0; x < 10; x++) //dz(L) -> da(L-1)  //todo: TRANSPOSE TRANSPOSE TRANSPOSE
     {
-        sum = 0;
+        sum = 0.0;
         for (y = 0; y < 10; y++)
         {
-            sum = sum + weights_Output[x][y] * d_sum_Output[y];
+            sum = sum + weights_Output[y][x] * d_sum_Output[y];  //transpose of weight matrix
         }
         d_Layer_3[x] = sum;
     }
 
-    for (i = 0; i < 10; i++) //tanh dir: 1-a^2
+    for (y = 0; y < 10; y++) //tanh dir: 1-a^2
     {
-        d_sum_Layer_3[i] = d_Layer_3[i] * (1 - (Layer_3[i] * Layer_3[i])); //dz
+        d_sum_Layer_3[y] = d_Layer_3[y] * (1 - (Layer_3[y] * Layer_3[y])); //dz
     }
     
     for (y = 0; y < 10; y++)
     {
         for (x = 0; x < 10; x++)
         {
-            d_weights_Layer_3[x][y] = Layer_2[x] * d_sum_Layer_3[y]; //dw
+            d_weights_Layer_3[y][x] = d_sum_Layer_3[y] * Layer_2[x]; //dw
         }
         d_bias_Layer_3[y] = d_sum_Layer_3[y]; //db
     }
     //////////////////////////// end layer 3
 
-    for (x = 0; x < 10; x++) //dz(L) -> da(L-1)
+    for (y = 0; y < 10; y++) //dz(L) -> da(L-1)
     {
-        sum = 0;
-        for (y = 0; y < 10; y++)
+        sum = 0.0;
+        for (x = 0; x < 10; x++)
         {
-            sum = sum + weights_Layer_3[x][y] * d_sum_Layer_3[y];
+            sum = sum + weights_Layer_3[x][y] * d_sum_Layer_3[x];
         }
-        d_Layer_2[x] = sum;
+        d_Layer_2[y] = sum;
     }
 
-    for (i = 0; i < 10; i++) //tanh dir: 1-a^2
+    for (y = 0; y < 10; y++) //tanh dir: 1-a^2
     {
-        d_sum_Layer_2[i] = d_Layer_2[i] * (1 - (Layer_2[i] * Layer_2[i])); //dz
+        d_sum_Layer_2[y] = d_Layer_2[y] * (1 - (Layer_2[y] * Layer_2[y])); //dz
     }
 
     for (y = 0; y < 10; y++)
     {
         for (x = 0; x < 10; x++)
         {
-            d_weights_Layer_2[x][y] = Layer_1[x] * d_sum_Layer_2[y]; //dw
+            d_weights_Layer_2[y][x] = d_sum_Layer_2[y] * Layer_1[x]; //dw
         }
         d_bias_Layer_2[y] = d_sum_Layer_2[y]; //db
     }
 
     //////////////////////////////// end layer 2
     
-    for (x = 0; x < 10; x++) //dz(L) -> da(L-1)
+    for (y = 0; y < 10; y++) //dz(L) -> da(L-1)
     {
-        sum = 0;
-        for (y = 0; y < 10; y++)
+        sum = 0.0;
+        for (x = 0; x < 10; x++)
         {
-            sum = sum + weights_Layer_2[x][y] * d_sum_Layer_2[y];
+            sum = sum + weights_Layer_2[x][y] * d_sum_Layer_2[x];
         }
-        d_Layer_1[x] = sum;
+        d_Layer_1[y] = sum;
     }
 
-    for (i = 0; i < 10; i++) //tanh dir: 1-a^2
+    for (y = 0; y < 10; y++) //tanh dir: 1-a^2
     {
-        d_sum_Layer_1[i] = d_Layer_1[i] * (1 - (Layer_1[i] * Layer_1[i])); //dz
+        d_sum_Layer_1[y] = d_Layer_1[y] * (1 - (Layer_1[y] * Layer_1[y])); //dz
     }
 
-    double diff = 0;
     for (y = 0; y < 10; y++)
     {
         for (x = 0; x < 784; x++)
@@ -348,21 +398,15 @@ int back_prop(int imageNum, bool testFlag) //cross entropy loss: -label*log(est)
 
             if (testFlag) //dw
             {
-                d_weights_Layer_1[x][y] = test_image[imageNum][x] * d_sum_Layer_1[y];
+                d_weights_Layer_1[y][x] = d_sum_Layer_1[y] * test_image[imageNum][x];
             }
             else
             {
-                d_weights_Layer_1[x][y] = train_image[imageNum][x] * d_sum_Layer_1[y];
-                if (train_image[imageNum][x] != 0)
-                {
-                    diff = train_image[imageNum][x] * d_sum_Layer_1[y];
-                }
+                d_weights_Layer_1[y][x] = d_sum_Layer_1[y] * train_image[imageNum][x];
             }
         }
         d_bias_Layer_1[y] = d_sum_Layer_1[y]; //db
     }
-
-
     return 0;
 }
 
@@ -385,6 +429,7 @@ int minibatch(int trainExNum, double learningRate)
         for (y = 0; y < 10; y++) //avg bias grad
         {
             sum_d_bias_Layer_1[y] = sum_d_bias_Layer_1[y] + d_bias_Layer_1[y];
+            
             sum_d_bias_Layer_2[y] = sum_d_bias_Layer_2[y] + d_bias_Layer_2[y];
             sum_d_bias_Layer_3[y] = sum_d_bias_Layer_3[y] + d_bias_Layer_3[y];
             sum_d_bias_Output[y] = sum_d_bias_Output[y] + d_bias_Output[y];
@@ -395,10 +440,10 @@ int minibatch(int trainExNum, double learningRate)
                 d_bias_Layer_3[y] = sum_d_bias_Layer_3[y] / (double)trainExNum;
                 d_bias_Output[y] = sum_d_bias_Output[y] / (double)trainExNum;
 
-                sum_d_bias_Layer_1[y] = 0;
-                sum_d_bias_Layer_2[y] = 0;
-                sum_d_bias_Layer_3[y] = 0;
-                sum_d_bias_Output[y] = 0;
+                sum_d_bias_Layer_1[y] = 0.0;
+                sum_d_bias_Layer_2[y] = 0.0;
+                sum_d_bias_Layer_3[y] = 0.0;
+                sum_d_bias_Output[y] = 0.0;
             }
         }
 
@@ -406,28 +451,28 @@ int minibatch(int trainExNum, double learningRate)
         {
             for (x = 0; x < 784; x++)
             {
-                sum_d_weights_Layer_1[x][y] = sum_d_weights_Layer_1[x][y] + d_weights_Layer_1[x][y];
+                sum_d_weights_Layer_1[y][x] = sum_d_weights_Layer_1[y][x] + d_weights_Layer_1[y][x];
                 if (finalExFlag)
                 {
-                    d_weights_Layer_1[x][y] = sum_d_weights_Layer_1[x][y] / (double)trainExNum;
+                    d_weights_Layer_1[y][x] = sum_d_weights_Layer_1[y][x] / (double)trainExNum;
 
-                    sum_d_weights_Layer_1[x][y] = 0;
+                    sum_d_weights_Layer_1[y][x] = 0.0;
                 }
             }
             for (x = 0; x < 10; x++)
             {
-                sum_d_weights_Layer_2[x][y] = sum_d_weights_Layer_2[x][y] + d_weights_Layer_2[x][y];
-                sum_d_weights_Layer_3[x][y] = sum_d_weights_Layer_3[x][y] + d_weights_Layer_3[x][y];
-                sum_d_weights_Output[x][y] = sum_d_weights_Output[x][y] + d_weights_Output[x][y];
+                sum_d_weights_Layer_2[y][x] = sum_d_weights_Layer_2[y][x] + d_weights_Layer_2[y][x];
+                sum_d_weights_Layer_3[y][x] = sum_d_weights_Layer_3[y][x] + d_weights_Layer_3[y][x];
+                sum_d_weights_Output[y][x] = sum_d_weights_Output[y][x] + d_weights_Output[y][x];
                 if (finalExFlag)
                 {
-                    d_weights_Layer_2[x][y] = sum_d_weights_Layer_2[x][y] / (double)trainExNum;
-                    d_weights_Layer_3[x][y] = sum_d_weights_Layer_3[x][y] / (double)trainExNum;
-                    d_weights_Output[x][y] = sum_d_weights_Output[x][y] / (double)trainExNum;
+                    d_weights_Layer_2[y][x] = sum_d_weights_Layer_2[y][x] / (double)trainExNum;
+                    d_weights_Layer_3[y][x] = sum_d_weights_Layer_3[y][x] / (double)trainExNum;
+                    d_weights_Output[y][x] = sum_d_weights_Output[y][x] / (double)trainExNum;
 
-                    sum_d_weights_Layer_2[x][y] = 0;
-                    sum_d_weights_Layer_3[x][y] = 0;
-                    sum_d_weights_Output[x][y] = 0;
+                    sum_d_weights_Layer_2[y][x] = 0.0;
+                    sum_d_weights_Layer_3[y][x] = 0.0;
+                    sum_d_weights_Output[y][x] = 0.0;
                 }
             }
         }
@@ -446,13 +491,13 @@ int update_Weight_Matrices(double learningRate)
     {
         for (x = 0; x < 784; x++)
         {
-            weights_Layer_1[x][y] = weights_Layer_1[x][y] - learningRate * d_weights_Layer_1[x][y];
+            weights_Layer_1[y][x] = weights_Layer_1[y][x] - learningRate * d_weights_Layer_1[y][x];
         }
         for (x = 0; x < 10; x++)
         {
-            weights_Layer_2[x][y] = weights_Layer_2[x][y] - learningRate * d_weights_Layer_2[x][y];
-            weights_Layer_3[x][y] = weights_Layer_3[x][y] - learningRate * d_weights_Layer_3[x][y];
-            weights_Output[x][y] = weights_Output[x][y] - learningRate * d_weights_Output[x][y];
+            weights_Layer_2[y][x] = weights_Layer_2[y][x] - learningRate * d_weights_Layer_2[y][x];
+            weights_Layer_3[y][x] = weights_Layer_3[y][x] - learningRate * d_weights_Layer_3[y][x];
+            weights_Output[y][x] = weights_Output[y][x] - learningRate * d_weights_Output[y][x];
         }
     }
     return 0;
@@ -474,7 +519,7 @@ int update_Bias_Matrices(double learningRate)
 
 double test_Network(int testExNum)
 {
-    double epochAccuracy = 0;
+    double epochAccuracy = 0.0;
     int i, j, imageNum, correctClassifications;
     double modelConfidence;
     int modelPrediction;
@@ -504,5 +549,6 @@ double test_Network(int testExNum)
         correctClassifications = correctClassifications + correctClassificationFlag; //+1 if correct
     }
     epochAccuracy = (correctClassifications / (double)testExNum) * 100;
+    printf("Epoch Accuracy = %f \n", epochAccuracy);
     return epochAccuracy;
 }
