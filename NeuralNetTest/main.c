@@ -37,6 +37,16 @@ double d_bias_Layer_2[10] = { 0 };
 double d_bias_Layer_3[10] = { 0 };
 double d_bias_Output[10] = { 0 };
 
+double m_weights_Layer_1[10][784] = { 0 };
+double m_weights_Layer_2[10][10] = { 0 };
+double m_weights_Layer_3[10][10] = { 0 };
+double m_weights_Output[10][10] = { 0 };
+
+double m_bias_Layer_1[10] = { 0 };
+double m_bias_Layer_2[10] = { 0 };
+double m_bias_Layer_3[10] = { 0 };
+double m_bias_Output[10] = { 0 };
+
 double sum_d_weights_Layer_1[10][784] = { 0 }; //todo: move back into minibatch?
 double sum_d_weights_Layer_2[10][10] = { 0 };
 double sum_d_weights_Layer_3[10][10] = { 0 };
@@ -56,9 +66,9 @@ double sigmoid(double exponent);
 int forward_Prop(int imageNum, bool testFlag);
 int back_prop(int imageNum, bool testFlag);
 
-int minibatch(int trainExNum, double learningRate);
-int update_Weight_Matrices(double learningRate);
-int update_Bias_Matrices(double learningRate);
+int minibatch(int trainExNum, double learningRate, double alpha);
+int update_Weight_Matrices();
+int update_Bias_Matrices();
 
 double test_Network(int imageNum);
 
@@ -75,12 +85,12 @@ int main(void)
     int i;
     
 
-    for (i = 0; i < 5000; i++)
+    for (i = 0; i < 20000; i++)
     {
-        minibatch(32, 0.1);
+        minibatch(32, 0.1, 0.5);
         if (i % 100 == 0)
         {
-            test_Network(100);
+            test_Network(1000);
         }
     }
     
@@ -410,7 +420,7 @@ int back_prop(int imageNum, bool testFlag) //cross entropy loss: -label*log(est)
     return 0;
 }
 
-int minibatch(int trainExNum, double learningRate) 
+int minibatch(int trainExNum, double learningRate, double alpha) 
 {
     int randEx, i, x, y;
     bool finalExFlag = false;
@@ -440,6 +450,11 @@ int minibatch(int trainExNum, double learningRate)
                 d_bias_Layer_3[y] = sum_d_bias_Layer_3[y] / (double)trainExNum;
                 d_bias_Output[y] = sum_d_bias_Output[y] / (double)trainExNum;
 
+                m_bias_Layer_1[y] = alpha * m_bias_Layer_1[y] - learningRate * d_bias_Layer_1[y];
+                m_bias_Layer_2[y] = alpha * m_bias_Layer_3[y] - learningRate * d_bias_Layer_2[y];
+                m_bias_Layer_3[y] = alpha * m_bias_Layer_2[y] - learningRate * d_bias_Layer_3[y];
+                m_bias_Output[y] = alpha * m_bias_Output[y] - learningRate * d_bias_Output[y];
+
                 sum_d_bias_Layer_1[y] = 0.0;
                 sum_d_bias_Layer_2[y] = 0.0;
                 sum_d_bias_Layer_3[y] = 0.0;
@@ -456,6 +471,8 @@ int minibatch(int trainExNum, double learningRate)
                 {
                     d_weights_Layer_1[y][x] = sum_d_weights_Layer_1[y][x] / (double)trainExNum;
 
+                    m_weights_Layer_1[y][x] = alpha * m_weights_Layer_1[y][x] - learningRate * d_weights_Layer_1[y][x];
+
                     sum_d_weights_Layer_1[y][x] = 0.0;
                 }
             }
@@ -470,6 +487,10 @@ int minibatch(int trainExNum, double learningRate)
                     d_weights_Layer_3[y][x] = sum_d_weights_Layer_3[y][x] / (double)trainExNum;
                     d_weights_Output[y][x] = sum_d_weights_Output[y][x] / (double)trainExNum;
 
+                    m_weights_Layer_2[y][x] = alpha * m_weights_Layer_2[y][x] - learningRate * d_weights_Layer_2[y][x];
+                    m_weights_Layer_3[y][x] = alpha * m_weights_Layer_3[y][x] - learningRate * d_weights_Layer_3[y][x];
+                    m_weights_Output[y][x] = alpha * m_weights_Output[y][x] - learningRate * d_weights_Output[y][x];
+
                     sum_d_weights_Layer_2[y][x] = 0.0;
                     sum_d_weights_Layer_3[y][x] = 0.0;
                     sum_d_weights_Output[y][x] = 0.0;
@@ -478,12 +499,12 @@ int minibatch(int trainExNum, double learningRate)
         }
     }
     
-    update_Bias_Matrices(learningRate);
-    update_Weight_Matrices(learningRate);
+    update_Bias_Matrices();
+    update_Weight_Matrices();
     return 0;
 }
 
-int update_Weight_Matrices(double learningRate)
+int update_Weight_Matrices()
 {
     int x, y;
 
@@ -491,28 +512,28 @@ int update_Weight_Matrices(double learningRate)
     {
         for (x = 0; x < 784; x++)
         {
-            weights_Layer_1[y][x] = weights_Layer_1[y][x] - learningRate * d_weights_Layer_1[y][x];
+            weights_Layer_1[y][x] = weights_Layer_1[y][x] + m_weights_Layer_1[y][x];
         }
         for (x = 0; x < 10; x++)
         {
-            weights_Layer_2[y][x] = weights_Layer_2[y][x] - learningRate * d_weights_Layer_2[y][x];
-            weights_Layer_3[y][x] = weights_Layer_3[y][x] - learningRate * d_weights_Layer_3[y][x];
-            weights_Output[y][x] = weights_Output[y][x] - learningRate * d_weights_Output[y][x];
+            weights_Layer_2[y][x] = weights_Layer_2[y][x] + m_weights_Layer_2[y][x];
+            weights_Layer_3[y][x] = weights_Layer_3[y][x] + m_weights_Layer_3[y][x];
+            weights_Output[y][x] = weights_Output[y][x] + m_weights_Output[y][x];
         }
     }
     return 0;
 }
 
-int update_Bias_Matrices(double learningRate)
+int update_Bias_Matrices()
 {
     int y;
 
     for (y = 0; y < 10; y++)
     {
-        bias_Layer_1[y] = bias_Layer_1[y] - learningRate * d_bias_Layer_1[y];
-        bias_Layer_2[y] = bias_Layer_2[y] - learningRate * d_bias_Layer_2[y];
-        bias_Layer_3[y] = bias_Layer_3[y] - learningRate * d_bias_Layer_3[y];
-        bias_Output[y] = bias_Output[y] - learningRate * d_bias_Output[y];
+        bias_Layer_1[y] = bias_Layer_1[y] + m_bias_Layer_1[y];
+        bias_Layer_2[y] = bias_Layer_2[y] + m_bias_Layer_2[y];
+        bias_Layer_3[y] = bias_Layer_3[y] + m_bias_Layer_3[y];
+        bias_Output[y] = bias_Output[y] + m_bias_Output[y];
     }
     return 0;
 }
